@@ -37,7 +37,7 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
  * used to store the account details temporarily in the memory.
  */
 public class InMemoryAccountDAO extends SQLiteOpenHelper implements AccountDAO {
-    private static final String DB_NAME = "200255M";
+    private static final String DB_NAME = "MyDatabase";
     private static final int DB_VERSION = 1;
     private static final String TABLE_NAME = "accounts";
     private static final String ACCOUNT_NO_COL = "accountNo";

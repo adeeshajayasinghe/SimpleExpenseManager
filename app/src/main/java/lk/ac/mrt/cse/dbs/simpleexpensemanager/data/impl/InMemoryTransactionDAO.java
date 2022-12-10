@@ -40,7 +40,7 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Transaction;
  */
 public class InMemoryTransactionDAO extends SQLiteOpenHelper implements TransactionDAO {
     //private final List<Transaction> transactions;
-    private static final String DB_NAME = "200255M";
+    private static final String DB_NAME = "MyDatabase";
     private static final int DB_VERSION = 1;
     private static final String TABLE_NAME = "transactions";
     private static final String DATE_COL = "date";
