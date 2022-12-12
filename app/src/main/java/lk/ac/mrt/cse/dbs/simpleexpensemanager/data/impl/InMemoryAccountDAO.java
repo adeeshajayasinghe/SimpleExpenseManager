@@ -20,13 +20,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.AccountDAO;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.exception.InvalidAccountException;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Account;
@@ -36,39 +31,22 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
  * This is an In-Memory implementation of the AccountDAO interface. This is not a persistent storage. A HashMap is
  * used to store the account details temporarily in the memory.
  */
-public class InMemoryAccountDAO extends SQLiteOpenHelper implements AccountDAO {
-    private static final String DB_NAME = "MyDatabase";
-    private static final int DB_VERSION = 1;
-    private static final String TABLE_NAME = "accounts";
-    private static final String ACCOUNT_NO_COL = "accountNo";
-    private static final String BANK_NAME_COL = "bankName";
-    private static final String HOLDER_COL = "accountHolderName";
-    private static final String BALANCE_COL = "balance";
+public class InMemoryAccountDAO implements AccountDAO {
+    private Context context;
     public InMemoryAccountDAO(Context context){
-        super(context, DB_NAME, null, DB_VERSION);
+        this.context = context;
     }
 
-    @Override
-    public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        String query = "CREATE TABLE " + TABLE_NAME + " ("
-                + ACCOUNT_NO_COL + " TEXT PRIMARY KEY, "
-                + BANK_NAME_COL + " TEXT, "
-                + HOLDER_COL + " TEXT, "
-                + BALANCE_COL + " NUMERIC)";
-
-        sqLiteDatabase.execSQL(query);
-    }
 
 
     @Override
     public List<String> getAccountNumbersList() {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME , null);
+        SQLiteDatabase db = DatabaseHelper.getHelperInstance(context).getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_NAME1 , null);
         List<String> accountNumbersList = new ArrayList<>();
-        if (cursor.moveToFirst()){
+        if (cursor != null && cursor.moveToFirst()){
             do {
-                accountNumbersList.add(new Account(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getDouble(4)).getAccountNo()); // Check this...........................
+                accountNumbersList.add(cursor.getString(0));
             } while (cursor.moveToNext());
         }
         cursor.close();
@@ -77,13 +55,13 @@ public class InMemoryAccountDAO extends SQLiteOpenHelper implements AccountDAO {
 
     @Override
     public List<Account> getAccountsList() {
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = DatabaseHelper.getHelperInstance(context).getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME , null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_NAME1 , null);
         List<Account> accountsList = new ArrayList<>();
-        if (cursor.moveToFirst()){
+        if (cursor != null && cursor.moveToFirst()){
             do {
-                accountsList.add(new Account(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getDouble(4)));
+                accountsList.add(new Account(cursor.getString(0), cursor.getString(1), cursor.getString(2), Double.parseDouble(cursor.getString(3))));
             } while (cursor.moveToNext());
         }
         cursor.close();
@@ -92,11 +70,11 @@ public class InMemoryAccountDAO extends SQLiteOpenHelper implements AccountDAO {
 
     @Override
     public Account getAccount(String accountNo) throws InvalidAccountException {
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = DatabaseHelper.getHelperInstance(context).getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME +" WHERE " + accountNo + " = ?", new String[]{accountNo});
-        if (cursor.getCount() > 0){
-            return new Account(cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getDouble(4));
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_NAME1 +" WHERE " + DatabaseHelper.ACCOUNT_NO_COL + " = ?", new String[]{accountNo});
+        if (cursor.moveToFirst() && cursor.getCount()>0){
+            return new Account(cursor.getString(cursor.getColumnIndex("accountNo")), cursor.getString(cursor.getColumnIndex("bankName")), cursor.getString(cursor.getColumnIndex("accountHolderName")), cursor.getDouble(cursor.getColumnIndex("balance")));
         }
         cursor.close();
         String msg = "Account " + accountNo + " is invalid.";
@@ -105,25 +83,25 @@ public class InMemoryAccountDAO extends SQLiteOpenHelper implements AccountDAO {
 
     @Override
     public void addAccount(Account account) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = DatabaseHelper.getHelperInstance(context).getWritableDatabase();
         ContentValues values = new ContentValues();
 
-        values.put(ACCOUNT_NO_COL, account.getAccountNo());
-        values.put(BANK_NAME_COL, account.getBankName());
-        values.put(HOLDER_COL, account.getAccountHolderName());
-        values.put(BALANCE_COL, account.getBalance());
+        values.put(DatabaseHelper.ACCOUNT_NO_COL, account.getAccountNo());
+        values.put(DatabaseHelper.BANK_NAME_COL, account.getBankName());
+        values.put(DatabaseHelper.HOLDER_COL, account.getAccountHolderName());
+        values.put(DatabaseHelper.BALANCE_COL, account.getBalance());
 
-        db.insert(TABLE_NAME, null, values);
+        db.insert(DatabaseHelper.TABLE_NAME1, null, values);
         db.close();
     }
 
     @Override
     public void removeAccount(String accountNo) throws InvalidAccountException {
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = DatabaseHelper.getHelperInstance(context).getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME +" WHERE " + accountNo + " = ?", new String[]{accountNo});
-        if (cursor.getCount() > 0){
-            db.delete(TABLE_NAME, "accountNo=?", new String[]{accountNo});
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_NAME1 +" WHERE " + DatabaseHelper.ACCOUNT_NO_COL + " = ?", new String[]{accountNo});
+        if (cursor!=null && cursor.getCount()>0){
+            db.delete(DatabaseHelper.TABLE_NAME1, "accountNo=?", new String[]{accountNo});
         }else{
             String msg = "Account " + accountNo + " is invalid.";
             throw new InvalidAccountException(msg);
@@ -133,10 +111,10 @@ public class InMemoryAccountDAO extends SQLiteOpenHelper implements AccountDAO {
 
     @Override
     public void updateBalance(String accountNo, ExpenseType expenseType, double amount) throws InvalidAccountException {
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = DatabaseHelper.getHelperInstance(context).getReadableDatabase();
         ContentValues contentValues = new ContentValues();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME +" WHERE " + accountNo + " = ?", new String[]{accountNo});
-        if (cursor.getCount() > 0){
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DatabaseHelper.TABLE_NAME1 +" WHERE " + DatabaseHelper.ACCOUNT_NO_COL + " = ?", new String[]{accountNo});
+        if (cursor!=null && cursor.getCount()>0){
             Account account = getAccount(accountNo);
             switch (expenseType) {
             case EXPENSE:
@@ -147,7 +125,7 @@ public class InMemoryAccountDAO extends SQLiteOpenHelper implements AccountDAO {
                 break;
             }
             contentValues.put("balance", account.getBalance());
-            db.update(TABLE_NAME, contentValues, "accountNo=?", new String[]{accountNo});
+            db.update(DatabaseHelper.TABLE_NAME1, contentValues, "accountNo=?", new String[]{accountNo});
         }else{
             String msg = "Account " + accountNo + " is invalid.";
             throw new InvalidAccountException(msg);
@@ -155,9 +133,4 @@ public class InMemoryAccountDAO extends SQLiteOpenHelper implements AccountDAO {
         cursor.close();
     }
 
-    @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-        onCreate(sqLiteDatabase);
-    }
 }
