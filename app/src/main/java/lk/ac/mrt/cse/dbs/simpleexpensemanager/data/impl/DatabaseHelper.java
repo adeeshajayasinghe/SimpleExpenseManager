@@ -7,7 +7,7 @@ import android.support.annotation.Nullable;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "200255M.db";
-    private static final int DB_VERSION = 14;
+    private static final int DB_VERSION = 15;
     public static final String TABLE_NAME1 = "accounts";
     public static final String ACCOUNT_NO_COL = "accountNo";
     public static final String TRANSACTION_ACCOUNT_NO_COL = "accountNo";

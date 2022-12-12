@@ -26,19 +26,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.TransactionDAO;
-import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Account;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Transaction;
 
 /**
- * This is an In-Memory implementation of TransactionDAO interface. This is not a persistent storage. All the
- * transaction logs are stored in a LinkedList in memory.
+ * This is a persistent implementation of TransactionDAO interface.
+ * All the transaction logs are stored in a SQLite Embedded Database.
  */
-public class InMemoryTransactionDAO implements TransactionDAO {
+public class PersistentTransactionDAO implements TransactionDAO {
     private static final SimpleDateFormat simpleDataFormat = new SimpleDateFormat("yyyy-MM-dd");
     private Context context;
 
-    public InMemoryTransactionDAO(Context context) {
+    public PersistentTransactionDAO(Context context) {
         this.context = context;
     }
 
@@ -66,7 +65,7 @@ public class InMemoryTransactionDAO implements TransactionDAO {
         List<Transaction> transactionsList = new ArrayList<>();
         if (cursor != null && cursor.moveToFirst()){
             do {
-                transactionsList.add(new Transaction(simpleDataFormat.parse(cursor.getString(0)), cursor.getString(1), ExpenseType.valueOf(cursor.getString(2)), Double.parseDouble(cursor.getString(3))));
+                transactionsList.add(new Transaction(simpleDataFormat.parse(cursor.getString(cursor.getColumnIndex("date"))), cursor.getString(cursor.getColumnIndex("accountNo")), ExpenseType.valueOf(cursor.getString(cursor.getColumnIndex("expenseType"))), Double.parseDouble(cursor.getString(cursor.getColumnIndex("amount")))));
             } while (cursor.moveToNext());
         }
         cursor.close();

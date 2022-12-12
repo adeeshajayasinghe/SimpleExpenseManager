@@ -28,12 +28,12 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Account;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
 
 /**
- * This is an In-Memory implementation of the AccountDAO interface. This is not a persistent storage. A HashMap is
- * used to store the account details temporarily in the memory.
+ * This is a persistent implementation of the AccountDAO interface.
+ * All the account details are stored in a SQLite embedded database.
  */
-public class InMemoryAccountDAO implements AccountDAO {
+public class PersistentAccountDAO implements AccountDAO {
     private Context context;
-    public InMemoryAccountDAO(Context context){
+    public PersistentAccountDAO(Context context){
         this.context = context;
     }
 
@@ -46,7 +46,7 @@ public class InMemoryAccountDAO implements AccountDAO {
         List<String> accountNumbersList = new ArrayList<>();
         if (cursor != null && cursor.moveToFirst()){
             do {
-                accountNumbersList.add(cursor.getString(0));
+                accountNumbersList.add(cursor.getString(cursor.getColumnIndex("accountNo")));
             } while (cursor.moveToNext());
         }
         cursor.close();
@@ -61,7 +61,7 @@ public class InMemoryAccountDAO implements AccountDAO {
         List<Account> accountsList = new ArrayList<>();
         if (cursor != null && cursor.moveToFirst()){
             do {
-                accountsList.add(new Account(cursor.getString(0), cursor.getString(1), cursor.getString(2), Double.parseDouble(cursor.getString(3))));
+                accountsList.add(new Account(cursor.getString(cursor.getColumnIndex("accountNo")), cursor.getString(cursor.getColumnIndex("bankName")), cursor.getString(cursor.getColumnIndex("accountHolderName")), cursor.getDouble(cursor.getColumnIndex("balance"))));
             } while (cursor.moveToNext());
         }
         cursor.close();

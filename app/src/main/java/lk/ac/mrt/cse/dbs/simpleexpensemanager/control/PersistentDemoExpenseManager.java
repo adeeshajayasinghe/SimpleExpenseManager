@@ -20,29 +20,27 @@ import android.content.Context;
 
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.AccountDAO;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.TransactionDAO;
-import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl.InMemoryAccountDAO;
-import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl.InMemoryTransactionDAO;
-import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Account;
-import lk.ac.mrt.cse.dbs.simpleexpensemanager.ui.MainActivity;
+import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl.PersistentAccountDAO;
+import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.impl.PersistentTransactionDAO;
 
 /**
  *
  */
-public class InMemoryDemoExpenseManager extends ExpenseManager {
+public class PersistentDemoExpenseManager extends ExpenseManager {
 
-    public InMemoryDemoExpenseManager(Context context) {
+    public PersistentDemoExpenseManager(Context context) {
         setup(context);
     }
 
     @Override
     public void setup(Context context) {
-        /*** Begin generating dummy data for In-Memory implementation ***/
+        /*** Begin generating dummy data for persistent implementation ***/
 
-        TransactionDAO inMemoryTransactionDAO = new InMemoryTransactionDAO(context);
-        setTransactionsDAO(inMemoryTransactionDAO);
+        TransactionDAO persistentTransactionDAO = new PersistentTransactionDAO(context);
+        setTransactionsDAO(persistentTransactionDAO);
 
-        AccountDAO inMemoryAccountDAO = new InMemoryAccountDAO(context);
-        setAccountsDAO(inMemoryAccountDAO);
+        AccountDAO persistentAccountDAO = new PersistentAccountDAO(context);
+        setAccountsDAO(persistentAccountDAO);
 
 
         // dummy data
